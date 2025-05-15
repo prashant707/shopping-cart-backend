@@ -231,12 +231,22 @@ app.get("/shoppingcart/categories/:categoryId",async(req,res)=>{
 
 // Cart
 
+async function getCartDatabyUserId(userId) {
+    try{
+        const cartData = await Cart.find({userId:userId}).populate("product");
+        return cartData;
+    }catch(error){
+        console.log("An error occurred while fetching data >> ",error);
+    }
+}
+
 async function createCartData(cartData) {
-    const {userId,products,price} = cartData;
+    const {userId,productId} = cartData;
     
+    console.log("cart data>>",cartData);
 
     try{
-        let cartItem = await Cart.findOne({userId,products})
+        let cartItem = await Cart.findOne({userId,product:productId}).populate("product");
         console.log("cartItem>>>",cartItem)
         if(cartItem){
             cartItem.quantity += 1;
@@ -244,9 +254,11 @@ async function createCartData(cartData) {
             return updatedCartItem;
         }
         else{
-             cartItem = new Cart(cartData);
+            console.log("inside else")
+             cartItem = new Cart({userId,product:productId});
              const newCartItem = await cartItem.save();
-             return newCartItem;
+             const populatedCartItem = await Cart.findById(newCartItem._id).populate("product");
+             return populatedCartItem;
         }
        
 
@@ -256,20 +268,34 @@ async function createCartData(cartData) {
 }
 
 async function deleteCartItem(cartData) {
-    const {userId,products} = cartData;
+    const {userId,productId} = cartData;
     try{
-        const deletedCartItem = await Cart.findOneAndDelete({userId,products});
-        console.log("deleted cart item>>",deletedCartItem)
+        const deletedCartItem = await Cart.findOneAndDelete({userId,product:productId});
+        // console.log("deleted cart item>>",deletedCartItem)
         return deletedCartItem;
     }catch(error){
             console.log("An error occurred whhile deleting cart data.",error);
     }
 }
 
+app.get("/api/cart/:userId",async (req,res)=>{
+    const userId = req.params.userId;
+    try{
+        const cartData = await getCartDatabyUserId(userId);
+        if(cartData.length>0){
+            res.status(200).json({message:"Cart Data fetched Successfully",data:{cart:cartData}})
+        }else{
+            res.status(404).json({message:"No data found."})
+        }
+    }catch(error){
+            res.status(500).json({error:"An error occurred while fetching data."});
+    }
+})
+
 app.post("/api/cart/add",async (req,res)=>{
     const cartItem = req.body;
     try{
-        if(cartItem.userId && cartItem.products && cartItem.price){
+        if(cartItem.userId && cartItem.productId){
             const cartItemAdded = await createCartData(cartItem);
             if(cartItemAdded){
                 res.status(200).json({message:'Cart updated Successfully.',item:{cartItemAdded}});
@@ -302,16 +328,29 @@ app.delete("/api/cart/delete", async (req,res)=>{
 
 // wishlist
 
+async function getWishlistDataByUserId(userId){
+    try{
+
+        const wishlistData = await Wishlist.find({userId:userId}).populate("productIds");
+        console.log("wishlistData>>",JSON.stringify(wishlistData));
+        return wishlistData;
+
+    }catch(error){
+        console.log("An error occurred",error);
+    }
+}
+// getWishlistDataByUserId("67ee246df24c44d71f285bb6");
+
 async function addItemWishlistData(wishlistData) {
     const {userId,productId} = wishlistData;
     try{
         console.log(userId)
-         const prodInWishlist = await Wishlist.findOne({userId,productIds:{$in:[productId]}});
+         const prodInWishlist = await Wishlist.findOne({userId,productIds:{$in:[productId]}}).populate("productIds");
          console.log("prodInWishlist>>>",prodInWishlist)
          if(prodInWishlist){
             return prodInWishlist;
          }else{
-            const updatedWishlist = await Wishlist.findOneAndUpdate({userId},{$addToSet:{productIds:productId}},{new:true,upsert:true});
+            const updatedWishlist = await Wishlist.findOneAndUpdate({userId},{$addToSet:{productIds:productId}},{new:true,upsert:true}).populate("productIds");
             console.log("productId>>",productId);
             console.log("UpdatedWishlist>>",updatedWishlist);
             return updatedWishlist;
@@ -340,12 +379,27 @@ async function deleteItemFromWishllist(wishlistData) {
         console.log(error);
     }
 }
+
+app.get("/api/wishlist/:userId", async (req,res)=>{
+    const userId = req.params.userId;
+    try{
+        const wishlistData =  await getWishlistDataByUserId(userId);
+        if(wishlistData){
+            res.status(200).json({message:"data fetched successfully",data:wishlistData[0]})
+        }else{
+            res.status(404).json({error:"no data found"})
+        }
+        
+    }catch(error){
+        res.status(500).json({error:`An error occured while fetching data ${error}`});
+    }
+})
 app.post("/api/wishlist/add", async (req,res)=>{
     const wishlistData = req.body;
     try{
       const wishlist = await addItemWishlistData(wishlistData); 
       if(wishlist){
-        res.status(201).json({message:'Product Added to wishlist'})
+        res.status(201).json({message:'Product Added to wishlist',data:{wishlist:wishlist}})
       }
 
     }catch(error){
@@ -358,7 +412,7 @@ app.delete("/api/wishlist/delete", async (req,res)=>{
     try{
       const wishlist = await deleteItemFromWishllist(wishlistData); 
       if(wishlist){
-        res.status(201).json({message:'Product Added to wishlist'})
+        res.status(201).json({message:'Product Removed from wishlist'})
       }else{
         res.status(404).json({error:"Item not found."});
       }
