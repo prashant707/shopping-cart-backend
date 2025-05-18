@@ -241,7 +241,7 @@ async function getCartDatabyUserId(userId) {
 }
 
 async function createCartData(cartData) {
-    const {userId,productId} = cartData;
+    const {userId,productId,action="increase"} = cartData;
     
     console.log("cart data>>",cartData);
 
@@ -249,16 +249,35 @@ async function createCartData(cartData) {
         let cartItem = await Cart.findOne({userId,product:productId}).populate("product");
         console.log("cartItem>>>",cartItem)
         if(cartItem){
-            cartItem.quantity += 1;
-            const updatedCartItem = await cartItem.save();
-            return updatedCartItem;
+            if(action==="increase"){
+                if(cartItem.quantity < cartItem.product.quantityAvailable){
+                    cartItem.quantity += 1;
+                    const updatedCartItem = await cartItem.save();
+                    console.log("Updated>>>",updatedCartItem)
+                    return {item:updatedCartItem,isDelete:false,message:""};;
+                } else{
+                    return {item:cartItem,isDelete:false,message:"maximum quantity reached."};;
+                }
+                
+            }else if(action==="decrease"){
+
+                console.log("inside else decrease>>>")
+                cartItem.quantity -= 1;
+                if(cartItem.quantity<=0){
+                    const deletedItem = await deleteCartItem(cartData);
+                    return {item:deletedItem,isDelete:true,message:""};
+                }
+                const updatedCartItem = await cartItem.save();
+                return {item:updatedCartItem,isDelete:false,message:""};
+            }
+            
         }
         else{
             console.log("inside else")
              cartItem = new Cart({userId,product:productId});
              const newCartItem = await cartItem.save();
              const populatedCartItem = await Cart.findById(newCartItem._id).populate("product");
-             return populatedCartItem;
+             return {item:populatedCartItem,isDelete:false,message:""};
         }
        
 
@@ -284,7 +303,8 @@ app.get("/api/cart/:userId",async (req,res)=>{
         const cartData = await getCartDatabyUserId(userId);
         if(cartData.length>0){
             res.status(200).json({message:"Cart Data fetched Successfully",data:{cart:cartData}})
-        }else{
+        }
+        else{
             res.status(404).json({message:"No data found."})
         }
     }catch(error){
@@ -293,12 +313,17 @@ app.get("/api/cart/:userId",async (req,res)=>{
 })
 
 app.post("/api/cart/add",async (req,res)=>{
-    const cartItem = req.body;
+    const cartData = req.body;
     try{
-        if(cartItem.userId && cartItem.productId){
-            const cartItemAdded = await createCartData(cartItem);
-            if(cartItemAdded){
-                res.status(200).json({message:'Cart updated Successfully.',item:{cartItemAdded}});
+        if(cartData.userId && cartData.productId){
+            const {item,isDelete,message} = await createCartData(cartData);
+            // console.log("cart item>>>>",cartItem)
+            if(isDelete){
+                res.status(200).json({message:'Product removed from cart.',item});
+            }else if(item && message==""){
+                res.status(200).json({message:'Cart updated Successfully.',item});
+            }else if(message==="maximum quantity reached."){
+                 res.status(200).json({message:'Maximum quantity reached.',item});
             }
             
     } else{
