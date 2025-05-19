@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const Product = require("./models/product.model");
 const Category = require("./models/category.model");
-const Cart = require("./models/cart.model")
+const Cart = require("./models/cart.model");
+const {Address} = require("./models/address.model");
+const Order = require("./models/order.model");
 require("dotenv").config();
 const express = require("express");
 const app = express();
@@ -12,6 +14,7 @@ const fs = require('fs');
 const UserEcom = require("./models/user.model");
 const { error } = require("console");
 const Wishlist = require("./models/wishlist.model");
+
 const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
 const jsonObj = JSON.parse(productData);
 
@@ -447,6 +450,106 @@ app.delete("/api/wishlist/delete", async (req,res)=>{
     }
 })
 
+
+//order
+
+async function createOrder(orderBody){
+const {userId,addressId,cart} = orderBody;
+try{
+    const address = await Address.findById(addressId);
+    if(cart.length > 0){
+        let totalAmount = 0;
+        let totalAmountWithDiscount=0
+        let totalDiscount = 0;
+        const orderItems = [];
+        for(const cartItem of cart){
+            const {product,quantity} = cartItem;
+            console.log("Product>>>",product);
+            const productDb = await Product.findById(product);
+            console.log("ProductDb>>>",productDb);
+        if(!productDb || productDb.quantityAvailable < quantity ){
+            return { error: `Product ${productDb.name} is unavailable or out of stock` };
+        }
+         totalAmount += productDb.price;
+         totalDiscount += productDb.price*(productDb.discount/100)*quantity;
+         orderItems.push({
+            product: productDb._id,
+            quantity:quantity,
+            price:productDb.price
+         });
+        totalAmountWithDiscount = totalAmount-totalDiscount; 
+        productDb.quantityAvailable -= quantity;
+        await productDb.save();
+        }
+
+        const newOrder = new Order({
+            userId,
+            items:orderItems,
+            totalAmount:totalAmount,
+            totalAmountWithDiscount:totalAmountWithDiscount,
+            shippingAddress:address
+
+        });
+
+       const orderCreated = newOrder.save();
+       return orderCreated;
+
+
+        
+    }
+
+    
+
+}catch(error){
+    console.log("An error occurred while creating order.",error);
+}
+
+}
+
+app.post('/api/profile/order/create',async (req,res)=>{
+    const orderBody = req.body;
+    try{
+        const orderCreated = await createOrder(orderBody);
+        if(orderCreated){
+            res.status(201).json({message:'Order created successfully.',data:{order:orderCreated}});
+        }
+    }catch(error){
+            res.status(500).json({error:'An error occurred while creating order.'});
+    }
+})
+
+//address
+
+async function createAddress(addressBody){
+    try{
+
+        const address = new Address(addressBody);
+        const createdAddress = address.save();
+         return createdAddress;
+
+        }catch(error){
+            console.log("An error occurred while creating address.")
+        }
+}
+
+
+app.post("/api/profile/address/add", async(req,res)=>{
+    const addressBody = req.body;
+    try{
+        if(addressBody.userId && addressBody.fullName  ){
+            const addressCreated = await createAddress(addressBody);
+            if(addressCreated){
+                res.status(201).json({message:'Address created',data:{address:addressCreated}});
+            }
+            
+        }else{
+            res.status(400).json({error:"Bad request."})
+        }
+        
+    }catch(error){
+        res.status(500).json({error:"An error occurred at the server end."})
+    }
+})
 
 
 
