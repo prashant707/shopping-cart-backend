@@ -1,26 +1,28 @@
+//library imports
 const mongoose = require("mongoose");
+const express = require("express");
+const app = express();
+const cors = require("cors");
+require("dotenv").config();
+
+//models imports
 const Product = require("./models/product.model");
 const Category = require("./models/category.model");
 const Cart = require("./models/cart.model");
 const {Address} = require("./models/address.model");
 const Order = require("./models/order.model");
-require("dotenv").config();
-const express = require("express");
-const app = express();
-const cors = require("cors");
+const UserEcom = require("./models/user.model");
+const Wishlist = require("./models/wishlist.model");
+// const fs = require('fs');
+//importing db connection function
 const { initialiseDatabaseConnection } = require("./db/db.connect");
 
-const fs = require('fs');
-const UserEcom = require("./models/user.model");
-const { error } = require("console");
-const Wishlist = require("./models/wishlist.model");
 
-const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
-const jsonObj = JSON.parse(productData);
-
-
-const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
-const categoryDataParsed = JSON.parse(categoryData);
+//reading JSON file
+// const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
+// const jsonObj = JSON.parse(productData);
+// const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
+// const categoryDataParsed = JSON.parse(categoryData);
 // console.log(categoryDataParsed);
 
 app.use(express.json());
@@ -599,23 +601,23 @@ app.post("/api/profile/address/add", async(req,res)=>{
 
 
 // Utility Script for loading data
-function createCategoryDataScript(){
-for(let i=0;i<categoryDataParsed.length;i++){
-    createCategoryData(categoryDataParsed[i]);
-}
-}
+// function createCategoryDataScript(){
+// for(let i=0;i<categoryDataParsed.length;i++){
+//     createCategoryData(categoryDataParsed[i]);
+// }
+// }
 
-function createProductScript(){
-for(let i=0;i<jsonObj.length;i++){
-    createProductData(jsonObj[i]);
-}
-}
+// function createProductScript(){
+// for(let i=0;i<jsonObj.length;i++){
+//     createProductData(jsonObj[i]);
+// }
+// }
 
-// createProductScript()
+// // createProductScript()
 
-async function deleteAllProduct(){
-    const deletedProd = await Product.deleteMany();
-}
+// async function deleteAllProduct(){
+//     const deletedProd = await Product.deleteMany();
+// }
 // deleteAllProduct();
 
 
