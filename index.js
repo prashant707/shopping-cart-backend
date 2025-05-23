@@ -21,7 +21,7 @@ const jsonObj = JSON.parse(productData);
 
 const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
 const categoryDataParsed = JSON.parse(categoryData);
-console.log(categoryDataParsed);
+// console.log(categoryDataParsed);
 
 app.use(express.json());
 app.use(cors());
@@ -79,10 +79,19 @@ async function createProductData(data){
     }
 }
 
-async function getProducts() {
+async function getProducts(query) {
     try{
-        const allProducts = await Product.find().populate('category');
-        console.log(allProducts)
+        
+        if(query.category){
+        const categories = await Category.find({name:{$in:query.category}});
+        const categoryIds = categories.map(category=>category._id)
+        query.category = {$in:categoryIds};
+        }
+        
+        const allProducts = await Product.find(query).populate('category');
+        console.log("products length>>>>",allProducts);
+        console.log("products length>>>>",allProducts.length)
+        console.log("query>>>>",query);
         return allProducts;
     }catch(error){
         console.log("An error occurred while creating data.",error);
@@ -101,6 +110,7 @@ async function getProductById(productId) {
 
 async function  getProductByCategoryId(categoryId) {
     try{
+        
         const productsByCategory = await Product.find({category:categoryId}).populate('category');
         console.log(productsByCategory)
         return productsByCategory;
@@ -109,15 +119,50 @@ async function  getProductByCategoryId(categoryId) {
     }
 }
 
-app.get('/shoppingcart', async (req,res)=>{
+app.get('/api/products', async (req,res)=>{
+    
     try{
-        const products = await getProducts();
+        const {minPrice,maxPrice,sortBy,selectedCategory,search} = req.query;
+        let query = {};
+        
+        if(minPrice || maxPrice){
+            query.price = {};
+            if(minPrice){
+                query.price.$gte = parseFloat(minPrice);
+            
+            }
+            
+            if(maxPrice){
+                query.price.$lte = parseFloat(maxPrice);
+            }
+        }
+
+        if(selectedCategory){
+            query.category = selectedCategory;
+        }
+
+        console.log("category>>>",query)
+
+        if (search) {
+         query.name = { $regex: search, $options: "i" };
+       }
+
+        
+        const products = await getProducts(query);
+
         
         if(products.length > 0){
+            if(sortBy=='lowToHigh'){
+                products.sort((a,b) => a.price - b.price);
+            }else if(sortBy=='highToLow'){
+                products.sort((a,b)=>b.price - a.price);
+            }
             res.status(200).json({data:{products}})
         }else{
             res.status(404).json({error:"No product found."})
         }
+
+        console.log("queryy>>",query)
     }catch(error){
         res.status(500).json({error:"An error occurred while fetching data."});
     }
@@ -144,7 +189,7 @@ app.get('/shoppingcart/products/categories/:categoryId', async (req,res)=>{
         const productsByCategory = await getProductByCategoryId(categoryId);
         
         if(productsByCategory.length > 0){
-            res.status(200).json({data:{productsByCategory}})
+            res.status(200).json({data:{    }})
         }else{
             res.status(404).json({error:"No product found."})
         }
@@ -197,7 +242,7 @@ async function getCategoriesData() {
 async function getCategoriesDataById(catId) {
     try{
         const categoryData = await Category.findById(catId);
-        console.log(categoryData);
+        // console.log(categoryData);
         return categoryData;
     }catch(error){
         console.log("An error occurred while fetching data .");
