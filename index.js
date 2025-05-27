@@ -676,12 +676,12 @@ app.delete("/api/profile/address/:addressId",async (req,res)=>{
 
 //reading JSON file
 
-const fs = require('fs');
-const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
-const jsonObj = JSON.parse(productData);
-const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
-const categoryDataParsed = JSON.parse(categoryData);
-console.log(categoryDataParsed);
+// const fs = require('fs');
+// const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
+// const jsonObj = JSON.parse(productData);
+// const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
+// const categoryDataParsed = JSON.parse(categoryData);
+// console.log(categoryDataParsed);
 
 // Utility Script for loading data
 
