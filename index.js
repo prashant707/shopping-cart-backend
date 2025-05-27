@@ -13,17 +13,12 @@ const {Address} = require("./models/address.model");
 const Order = require("./models/order.model");
 const UserEcom = require("./models/user.model");
 const Wishlist = require("./models/wishlist.model");
-// const fs = require('fs');
+
 //importing db connection function
 const { initialiseDatabaseConnection } = require("./db/db.connect");
 
 
-//reading JSON file
-// const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
-// const jsonObj = JSON.parse(productData);
-// const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
-// const categoryDataParsed = JSON.parse(categoryData);
-// console.log(categoryDataParsed);
+
 
 app.use(express.json());
 app.use(cors());
@@ -77,7 +72,7 @@ async function createProductData(data){
         return product;
         
     }catch(error){
-        console.log("An error occurred while creating data.");
+        console.log("An error occurred while creating data.",error);
     }
 }
 
@@ -679,13 +674,24 @@ app.delete("/api/profile/address/:addressId",async (req,res)=>{
     }
 })
 
+//reading JSON file
+
+const fs = require('fs');
+const productData =fs.readFileSync("./Dataset/Product.json",'utf-8');
+const jsonObj = JSON.parse(productData);
+const categoryData = fs.readFileSync("./Dataset/Category.json",'utf-8')
+const categoryDataParsed = JSON.parse(categoryData);
+console.log(categoryDataParsed);
 
 // Utility Script for loading data
+
 // function createCategoryDataScript(){
 // for(let i=0;i<categoryDataParsed.length;i++){
 //     createCategoryData(categoryDataParsed[i]);
 // }
 // }
+
+// createCategoryDataScript();
 
 // function createProductScript(){
 // for(let i=0;i<jsonObj.length;i++){
@@ -693,7 +699,7 @@ app.delete("/api/profile/address/:addressId",async (req,res)=>{
 // }
 // }
 
-// // createProductScript()
+// createProductScript()
 
 // async function deleteAllProduct(){
 //     const deletedProd = await Product.deleteMany();

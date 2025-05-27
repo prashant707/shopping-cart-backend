@@ -9,10 +9,12 @@ const addressSchema = new mongoose.Schema({
     },
     fullName:{type:String,required:true},
     phoneNumber:{type:String,required:true},
+    addressLine1:{type:String,required:true},
+    addressLine2:{type:String},
     pincode:{type:String,required:true},
     state:{type:String,required:true},
     city:{type:String,required:true},
-    locality:{type:String},
+    country:{type:String,required:true},
     houseNumber:{type:String,required:true},
     landmark:{type:String},
     addressType:{
