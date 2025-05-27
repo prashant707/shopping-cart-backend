@@ -1,7 +1,7 @@
 [
-  { "name": "Mens","photoUrl":"https://images.pexels.com/photos/27871997/pexels-photo-27871997/free-photo-of-a-suit-and-tie-hanging-on-a-hanger.jpeg" },
-  { "name": "Womens","photoUrl":"https://images.pexels.com/photos/27871997/pexels-photo-27871997/free-photo-of-a-suit-and-tie-hanging-on-a-hanger.jpeg" },
-  { "name": "Kids","photoUrl":"https://images.pexels.com/photos/27871997/pexels-photo-27871997/free-photo-of-a-suit-and-tie-hanging-on-a-hanger.jpeg" },
-  { "name": "Electronics","photoUrl":"https://images.pexels.com/photos/27871997/pexels-photo-27871997/free-photo-of-a-suit-and-tie-hanging-on-a-hanger.jpeg" },
-  { "name": "Footwear","photoUrl":"https://images.pexels.com/photos/27871997/pexels-photo-27871997/free-photo-of-a-suit-and-tie-hanging-on-a-hanger.jpeg" }
+  { "name": "Mens","photoUrl":"https://images.pexels.com/photos/15606973/pexels-photo-15606973/free-photo-of-a-man-in-sunglasses-and-a-green-jacket.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" },
+  { "name": "Womens","photoUrl":"https://images.pexels.com/photos/6995902/pexels-photo-6995902.jpeg?auto=compress&cs=tinysrgb&w=600" },
+  { "name": "Kids","photoUrl":"https://images.pexels.com/photos/5559986/pexels-photo-5559986.jpeg?auto=compress&cs=tinysrgb&w=600" },
+  { "name": "Electronics","photoUrl":"https://images.pexels.com/photos/306763/pexels-photo-306763.jpeg?auto=compress&cs=tinysrgb&w=600" },
+  { "name": "Footwear","photoUrl":"https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=600" }
 ]
