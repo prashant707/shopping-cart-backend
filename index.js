@@ -144,7 +144,8 @@ app.get('/api/products', async (req,res)=>{
         }
 
         if(rating){
-            query.rating.$gte = rating;
+            query.rating = {};
+            query.rating.$gte = parseFloat(rating);
         }
 
         console.log("category>>>",query)
@@ -170,7 +171,7 @@ app.get('/api/products', async (req,res)=>{
 
         console.log("queryy>>",query)
     }catch(error){
-        res.status(500).json({error:"An error occurred while fetching data."});
+        res.status(500).json({message:"An error occurred while fetching data.",error});
     }
 })
 
