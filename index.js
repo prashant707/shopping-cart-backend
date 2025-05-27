@@ -124,7 +124,7 @@ async function  getProductByCategoryId(categoryId) {
 app.get('/api/products', async (req,res)=>{
     
     try{
-        const {minPrice,maxPrice,sortBy,selectedCategory,search} = req.query;
+        const {minPrice,maxPrice,sortBy,selectedCategory,search,rating} = req.query;
         let query = {};
         
         if(minPrice || maxPrice){
@@ -141,6 +141,10 @@ app.get('/api/products', async (req,res)=>{
 
         if(selectedCategory){
             query.category = selectedCategory;
+        }
+
+        if(rating){
+            query.rating.$gte = rating;
         }
 
         console.log("category>>>",query)
@@ -500,6 +504,16 @@ app.delete("/api/wishlist/delete", async (req,res)=>{
 
 //order
 
+async function getOrders(userId){
+    try{
+        const orders = await Order.find({userId});
+        return orders;
+    }catch(error){
+        console.log(`function : getOrder , An error occured>> ${error}`);
+    }
+}
+
+
 async function createOrder(orderBody){
 const {userId,addressId,cart} = orderBody;
 try{
@@ -513,6 +527,7 @@ try{
             const {product,quantity} = cartItem;
             console.log("Product>>>",product);
             const productDb = await Product.findById(product);
+           console.log("single product >>",product);
             console.log("ProductDb>>>",productDb);
         if(!productDb || productDb.quantityAvailable < quantity ){
             return { error: `Product ${productDb.name} is unavailable or out of stock` };
@@ -553,6 +568,20 @@ try{
 
 }
 
+app.get('/api/profile/order/:userId',async (req,res)=>{
+    try{
+        const userId = req.params.userId;
+        const orders = await getOrders(userId);
+        if(orders?.length>0){
+            res.status(200).json({message:'Orders fetched successfully',data:{orders}})
+        }else{
+            res.status(404).json({message:'No orders fetched',data:{orders:[]}});
+        }
+    }catch(error){
+        res.status(500).json("An error occurred >>",error);
+    }
+})
+
 app.post('/api/profile/order/create',async (req,res)=>{
     const orderBody = req.body;
     try{
@@ -561,7 +590,7 @@ app.post('/api/profile/order/create',async (req,res)=>{
             res.status(201).json({message:'Order created successfully.',data:{order:orderCreated}});
         }
     }catch(error){
-            res.status(500).json({error:'An error occurred while creating order.'});
+            res.status(500).json({error:`An error occurred while creating order.${error}`});
     }
 })
 
@@ -579,6 +608,30 @@ async function createAddress(addressBody){
         }
 }
 
+async function getAddress(userId){
+    try{
+        const addresses = await Address.find({userId});
+        return addresses;
+    }catch(error){
+        console.log("An error occurred.")
+    }
+}
+
+app.get("/api/profile/address/:userId", async(req,res)=>{
+    const userId = req.params.userId;
+    try{
+        const addresses = await getAddress(userId);
+        if(addresses?.length>0){
+            res.status(200).json({message:"Address found succesfully.",data:{addresses}})
+        }else{
+             res.status(200).json({message:"No address found.",data:{addresses:[]}})
+        }
+        
+    }catch(error){
+        res.status(500).json({error:`An error occurred at the server end. ${error}`})
+    }
+})
+
 
 app.post("/api/profile/address/add", async(req,res)=>{
     const addressBody = req.body;
@@ -594,7 +647,7 @@ app.post("/api/profile/address/add", async(req,res)=>{
         }
         
     }catch(error){
-        res.status(500).json({error:"An error occurred at the server end."})
+        res.status(500).json({error:`An error occurred at the server end. ${error}`})
     }
 })
 
