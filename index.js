@@ -618,6 +618,15 @@ async function getAddress(userId){
     }
 }
 
+async function deleteAddressById(addressId){
+    try{
+        const deletedAddress = await Address.findByIdAndDelete(addressId);
+        return deletedAddress;
+    }catch(error){
+        console.log({error:'An error occurred'})
+    }
+}
+
 app.get("/api/profile/address/:userId", async(req,res)=>{
     const userId = req.params.userId;
     try{
@@ -652,6 +661,23 @@ app.post("/api/profile/address/add", async(req,res)=>{
     }
 })
 
+app.delete("/api/profile/address/:addressId",async (req,res)=>{
+    try{
+        const addressId = req.params.addressId;
+        if (!addressId) {
+            return res.status(400).json({ message: 'Address ID is required.' });
+        }
+        const deletedAddress = await deleteAddressById(addressId);
+        if(deletedAddress){
+            res.status(200).json({message:'Address deleted successfully.'});
+        }else{
+            res.status(404).json({message:'Address not found.'});
+        }
+
+    }catch(error){
+        res.status(500).json({error:"An error occurredd."});
+    }
+})
 
 
 // Utility Script for loading data
