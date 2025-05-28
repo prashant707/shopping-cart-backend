@@ -462,7 +462,7 @@ app.get("/api/wishlist/:userId", async (req,res)=>{
         if(wishlistData){
             res.status(200).json({message:"data fetched successfully",data:wishlistData[0]})
         }else{
-            res.status(404).json({error:"no data found"})
+            res.status(200).json({error:"no data found",data:{}})
         }
         
     }catch(error){
@@ -528,7 +528,7 @@ try{
         if(!productDb || productDb.quantityAvailable < quantity ){
             return { error: `Product ${productDb.name} is unavailable or out of stock` };
         }
-         totalAmount += productDb.price;
+         totalAmount += productDb.price*quantity;
          totalDiscount += productDb.price*(productDb.discount/100)*quantity;
          orderItems.push({
             product: productDb._id,
