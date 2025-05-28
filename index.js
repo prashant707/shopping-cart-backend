@@ -355,7 +355,7 @@ app.get("/api/cart/:userId",async (req,res)=>{
             res.status(200).json({message:"Cart Data fetched Successfully",data:{cart:cartData}})
         }
         else{
-            res.status(404).json({message:"No data found."})
+            res.status(200).json({message:"No data found.",data:{cart:[]}})
         }
     }catch(error){
             res.status(500).json({error:"An error occurred while fetching data."});
