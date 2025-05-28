@@ -254,7 +254,7 @@ async function getCategoriesDataById(catId) {
 app.get("/shoppingcart/categories/",async(req,res)=>{
     try{
         const categoriesData = await getCategoriesData();
-        if(categoriesData.length > 0){
+        if(categoriesData?.length > 0){
             res.status(200).json({data:{categories:categoriesData}});
         }else{
             res.status(404).json({error:"No data found."});
